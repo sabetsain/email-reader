@@ -2,12 +2,14 @@
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from datetime import datetime, timedelta
+from bs4 import BeautifulSoup
+
 import pickle
 import os.path
 import base64
 import email
 import lxml
-from bs4 import BeautifulSoup
 
 # Define the SCOPES. If modifying it, delete the token.pickle file.
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
@@ -40,8 +42,10 @@ def getEmails():
     # Connect to the Gmail API
     service = build('gmail', 'v1', credentials=creds)
 
+    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y/%m/%d")
+
     # request a list of all the messages
-    result = service.users().messages().list(maxResults=10, userId='me').execute()
+    result = service.users().messages().list(userId='me', q=f'after:{yesterday}').execute()
 
     # We can also pass maxResults to get any number of emails. Like this:
     # result = service.users().messages().list(maxResults=200, userId='me').execute()
@@ -103,5 +107,5 @@ def getEmails():
             # Expose the error if one actually manages to bypass the structure checks
             print(f"Error parsing message {msg['id']}: {e}")
 
-if __name__ == "__main__":
-    getEmails()
+# if __name__ == "__main__":
+#     getEmails()
